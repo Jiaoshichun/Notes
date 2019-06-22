@@ -1,0 +1,45 @@
+从init.cpp的main开始 http://androidxref.com/6.0.1_r10/xref/system/core/init/init.cpp  1080行 init_parse_config_file("/init.rc"); 解析脚本init.rc
+死循环   执行一次命令 execute_one_command(); 开启一次进程restart_processes(); 最终调用 service_start开启进程   
+主要是进行解析init.rc脚本  
+
+ 
+
+开启serviceManager脚本
+service servicemanager /system/bin/servicemanager
+   class core
+   user system
+   group system
+   critical
+   onrestart restart healthd
+   onrestart restart zygote
+   onrestart restart media
+   onrestart restart surfaceflinger
+   onrestart restart drm
+
+
+开启Zygote的脚本
+import /init.${ro.zygote}.rc
+
+http://androidxref.com/7.0.0_r1/xref/system/core/rootdir/init.zygote32.rc
+
+service zygote /system/bin/app_process -Xzygote /system/bin --zygote --start-system-server
+  class main
+  socket zygote stream 660 root system
+  onrestart write /sys/android_power/request_state wake
+  onrestart write /sys/power/state on
+  onrestart restart audioserver
+  onrestart restart cameraserver
+  onrestart restart media
+  onrestart restart netd
+  writepid /dev/cpuset/foreground/tasks /dev/stune/foreground/tasks
+
+app_process 目录下只有 app_main.cpp文件
+实际执行的是 http://androidxref.com/6.0.1_r10/xref/frameworks/base/cmds/app_process/app_main.cpp 的main方法 
+最终调用   runtime.start("com.android.internal.os.ZygoteInit", args, zygote);  
+http://androidxref.com/7.0.0_r1/xref/frameworks/base/core/jni/AndroidRuntime.cpp  的start方法  (974)
+startVm  开启虚拟机 
+startVmCreated(env)  
+startReg(env) -> register_jni_procs  注册jni方法
+env->CallStaticVoidMethod(startClass, startMeth, strArray);  调用 com.android.internal.os.ZygoteInit的main方法   包含start-system-server参数
+
+

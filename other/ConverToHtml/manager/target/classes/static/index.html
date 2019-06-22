@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+</head>
+<body>
+<h1>支持doc、xls、ppt、pdf文件在线预览</h1>
+<p>doc,xls文件是转为html文件，ppt通过python脚本转换为pdf文件，通过pdf.js使pdf可以在线预览<br>
+ppt另一种在线预览方式，将每页转为图片，再转为html进行展示，但是会有不清晰和某些字符串乱码的问题</p>
+<div>上传文件后，可在线预览</div>
+<div id="upload_file">
+    <form id="fileUploadForm" method="post" enctype="multipart/form-data">
+        <input type="file" name="file">
+        <input id="btnSubmit" type="submit" name="submit" value="上传文件">
+    </form>
+    <div style="visibility:hidden" id="div_preview"><a>在线预览</a></div>
+</div>
+
+<pre>
+    <span id="result"></span>
+</pre>
+<script>
+    $(document).ready(function () {
+
+        $("#btnSubmit").click(function (event) {
+            //禁止默认动作
+            event.preventDefault();
+            fire_ajax_submit();
+        });
+    });
+
+    function fire_ajax_submit() {
+
+        // Get form
+        var form = $('#fileUploadForm')[0];
+
+        var data = new FormData(form);
+
+        data.append("extraField", "This is some extra data, testing");
+
+        $("#btnSubmit").prop("disabled", true);
+
+        $.ajax({
+            type: "POST",
+            enctype: 'multipart/form-data',
+            url: "/api/upload/multi",
+            data: data,
+            //http://api.jquery.com/jQuery.ajax/
+            //https://developer.mozilla.org/en-US/docs/Web/API/FormData/Using_FormData_Objects
+            processData: false, //prevent jQuery from automatically transforming the data into a query string
+            contentType: false,
+            cache: false,
+            timeout: 600000,
+            success: function (data) {
+
+                $("#result").text("");
+                $("#btnSubmit").prop("disabled", false);
+                $("#div_preview").css('visibility','visible');
+                $("#div_preview a").prop('href',data);
+                console.log("SUCCESS : ", data);
+            },
+            error: function (e) {
+
+                $("#result").text(e.responseText);
+                console.log("ERROR : ", e);
+                $("#btnSubmit").prop("disabled", false);
+
+            }
+        });
+
+    }
+
+</script>
+</body>
+</html>

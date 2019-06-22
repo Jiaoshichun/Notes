@@ -1,0 +1,21 @@
+
+Activity  startActivityForResult  ->  mInstrumentation.execStartActivity
+Instrumentation execStartActivity -> ActivityManager.getService().startActivity   1807行
+ActivityManagerService  startActivity ->> startActivityAsUser ->  mActivityStartController.obtaisStarter  . exeucte   5106行
+ActivityStarter  execute ->> startActivityMayWait  ->> startActivity(571行) ->> startActivity(1193行) ->> startActivityUnchecked(1220行)  -> mTargetStack.startActivityLocked (1439) 
+
+ActivityStack  startActivityLocked(2859)  ->>ensureActivitiesVisibleLocked  (2967)  ->>makeVisibleAndRestartIfNeeded (1908) / r.makeClientVisible()( 1923)
+
+
+ActivityStack  makeVisibleAndRestartIfNeeded ->mStackSupervisor.startSpecificActivityLocked (2105)
+ActivityStackSupervisor  1678行  startSpecificActivityLocked 
+ActivityManagerService   4060行  startProcessLocked
+
+
+ActivityRecord  makeClientVisible -> service.getLifecycleManager().scheduleTransaction(app.thread, appToken, WindowVisibilityItem.obtain(true /* showWindow */)) 
+ClientLifecycleManager scheduleTransaction (81) ->> scheduleTransaction(ClientTransaction transaction) (45) ->ClientTransaction  mClient.scheduleTransaction(this); (ApplicationThread.scheduleTransaction) 
+ActivityThread   scheduleTransaction(ClientTransaction transaction) (1539) -> sendMessage(ActivityThread.H.EXECUTE_TRANSACTION, transaction);   -> TransactionExecutor.execute (64)
+TransactionExecutor execute ->> executeCallbacks  -> item.execute(mTransactionHandler, token, mPendingActions);(108)  (LaunchActivityItem .execute) -> client.handlerLaunchActivity() (ActivityThread.handlerLaunchActivity)
+ActivityThread . handleLaunchActivity() (3024)
+
+
